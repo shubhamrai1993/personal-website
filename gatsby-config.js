@@ -1,33 +1,29 @@
 module.exports = {
   siteMetadata: {
-    siteTitle: 'Chronoblog Starter',
-    siteDescription: 'Starter for Gatsby Theme Chronoblog',
+    siteTitle: 'Mein blegh',
+    siteDescription: 'Personal page of Shubham Rai',
     siteImage: '/banner.png', // main image of the site for metadata
     siteUrl: 'https://chronoblog.now.sh/',
     pathPrefix: '/',
     siteLanguage: 'en',
     ogLanguage: `en_US`,
-    author: 'Site Author', // for example - 'Ivan Ganev'
-    authorDescription: 'short author description', // short text about the author
-    avatar: '/avatar.jpg',
+    author: 'Shubham Rai', // for example - 'Ivan Ganev'
+    authorDescription: 'DevOps guy with extensive experience of having dabbled all across the tech stack', // short text about the author
+    avatar: '/avatar.png',
     twitterSite: '', // website account on twitter
     twitterCreator: '', // creator account on twitter
     social: [
       {
         icon: `at`,
-        url: `mailto:mymail@mail.com`
+        url: `mailto:shubham.rai.iitg@gmail.com`
       },
       {
         icon: `twitter`,
-        url: `https://twitter.com/ganevru`
+        url: `https://twitter.com/Shubham5830`
       },
       {
         icon: `github`,
-        url: `https://github.com/Chronoblog/gatsby-theme-chronoblog`
-      },
-      {
-        icon: `node-js`,
-        url: `https://www.npmjs.com/package/gatsby-theme-chronoblog`
+        url: `https://github.com/shubhamrai1993/`
       }
     ]
   },
@@ -72,13 +68,6 @@ module.exports = {
     },
     {
       resolve: `gatsby-plugin-sitemap`
-    },
-    {
-      resolve: `gatsby-plugin-google-analytics`,
-      options: {
-        // replace "UA-XXXXXXXXX-X" with your own Tracking ID
-        trackingId: 'UA-XXXXXXXXX-X'
-      }
     }
   ]
 };
