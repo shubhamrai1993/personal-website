@@ -92,35 +92,30 @@ $ curl localhost:80
 <html>
 <head>
 <title>Welcome to nginx!</title>
--------- nginx welcome page
+-----------------------------------------
 ```
 
+## 3. None
 
+As the name suggests, this is the docker network that does not exist. It is used to provide absolute network isolation to containers by disabling its networking. No incoming or outgoing connections are allowed to and from such containers respectively. To use this option simply supply this with `network` option.
 
-
-This is an example blog post. All your blog posts should be here: `content/posts`.
-
-Websites like Reddit, StackOverflow, and GitHub had millions of people using Markdown. And Markdown started to be used beyond the web, to author books, articles, slide shows, letters, and lecture notes.
-
-What distinguishes Markdown from many other lightweight markup syntaxes, which are often easier to write, is its readability. As Gruber writes:
-
-> The overriding design goal for Markdown’s formatting syntax is to make it as readable as possible. The idea is that a Markdown-formatted document should be publishable as-is, as plain text, without looking like it’s been marked up with tags or formatting instructions.
-
-## Frontmatter
-
-Metadata for your Markdown.
-
-In this post it looks like this:
-
-```md
----
-title: Full Blog Post Example
-cover: ./image.jpg
-date: 2019-11-05
-description: All the usual blog post.
-tags: ['post']
----
+```bash
+$ docker run --network host -d nginx:latest
+27b01648936d03ccb214dd59f0175a6fada94fb80da32fa7b485ee91c37f2ffc
 ```
+
+You can `inspect` the container and verify that no IP address has been assigned to it.
+
+## 4. Macvlan
+
+This option enables you to launch containers with MAC addresses assigned to them. Your container behaves as an independent device once launched on this network and can be connect to by those legacy applications that require connection to a physical device. The option might be useful in some cases but docker recommends avoiding this method if feasible.
+
+## 5. Overlay
+
+This is a multi node network that enables you distribute your network over a set of hosts. It allows containers launched on separate hosts to communicate with each other. This option is mostly relevant to Docker Swarm so we won't be going into detail here. But we will look into how Kubernetes handles a similar use case at the end.
+
+Docker also provides option to integrate with a specific networking driver provided by an external party through a plugin based interface.
+
 
 Read more about this setting here: [github.com/Chronoblog/gatsby-theme-chronoblog#posts](https://github.com/Chronoblog/gatsby-theme-chronoblog#posts)
 
