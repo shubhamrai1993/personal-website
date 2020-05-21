@@ -20,7 +20,9 @@ badd725b14a0        host                host                local
 97a49ff283fd        none                null                local
 ```
 
-You can see that there are three types of networks docker daemon has already created for you. Each of these have their own names and network-id. We will go into the various drivers and how to use them in them next.
+You can see that there are three types of networks docker daemon has already created for you. Each of these have their own names and network-id. We will go into the various drivers and how to use them next.
+
+# Docker network drivers
 
 Docker has six networking options you can start your container with 
 
@@ -68,6 +70,7 @@ Docker also provides you an option to create your own bridge network if required
 ```bash
 $ docker network create custom-network
 34c9707787c96e777b3a2e0a2fac6284dd59da9753e3609c4007686b2e91fbbd
+
 $ docker network ls
 NETWORK ID          NAME                DRIVER              SCOPE
 4071b98202b2        bridge              bridge              local
@@ -87,6 +90,7 @@ To use this option, just specify it while launching your container -
 ```bash
 $ docker run --network host -d nginx:latest
 27b01648936d03ccb214dd59f0175a6fada94fb80da32fa7b485ee91c37f2ffc
+
 $ curl localhost:80
 <!DOCTYPE html>
 <html>
@@ -116,114 +120,50 @@ This is a multi node network that enables you distribute your network over a set
 
 Docker also provides option to integrate with a specific networking driver provided by an external party through a plugin based interface.
 
+# Networking from a container's perspective
 
-Read more about this setting here: [github.com/Chronoblog/gatsby-theme-chronoblog#posts](https://github.com/Chronoblog/gatsby-theme-chronoblog#posts)
+Now let's take a slight detour and look at how networking looks from a container's perspective. This will be helpful when we take a look at the Kubernetes networking later. A container is basically a collection of Linux isolation technologies that enables it to behave as an independent entity of it's own. We are concerned with the networking namespace here. 
 
-## Markdown
+Every container is created with a networking namespace of it's own. It means a separate IP address, routing table, network interface and other networking resources. The containers are initialized with a virtual networking interface connected to the underlying network. The container does not care about the specific network type it is connected to at the moment and can be shifted between networks while running. While coming up a container is assigned it's own IP by the docker daemon. Docker daemon satisfies the need of a DHCP in this case. It has it's own port space independent from the host machine. Docker provides you a way to create a mapping between the two port spaces - 
 
-This post is a `markdown` file and you can do everything in it that allows you to do markdown.
+```bash
+$ docker run -d -p 8080:80 nginx:latest
+c5897567ef62f35c47757e5a511d60aefab2b6cf13eabeb8f4543a5ec29c35ab
 
-### Headers
-
-```md
-# This is an <h1> tag
-
-## This is an <h2> tag
-
-###### This is an <h6> tag
+$ curl localhost:8080
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+-----------------------------------------
 ```
 
-# This is an `<h1>` tag
+This option won't work if you choose the `host` networking driver since the host and the container already share there port spaces.
 
-## This is an `<h2>` tag
+You can also ask a container to share the networking namespace of another running container while running it. This basically integrates the two containers at the networking level while being isolated in other aspects. Let's look at how to achieve this.
 
-###### This is an `<h6>` tag
+```bash
+$ docker run --network host -d nginx:latest
+27b01648936d03ccb214dd59f0175a6fada94fb80da32fa7b485ee91c37f2ffc
 
-### Emphasis
-
-```md
-_This text will be italic_  
-**This text will be bold**
+$ docker run -it --network container:c5897567ef62 ubuntu
+/# apt update; apt install -y curl
+/# curl localhost:80
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+-----------------------------------------
 ```
 
-_This text will be italic_  
-**This text will be bold**
+We launched an `nginx` container followed by an `ubuntu` container that shares it's network. You can see that once inside the `ubuntu` container we can `curl` the `nginx` on `localhost` directly without addressing it through IP or container name. Both the containers share IP addresses and port spaces. Another container trying to use the same port already engaged by `nginx` container will not be able to come up because of port conflict.
 
-### Lists
+You can assign a specific IP address to a docker container at the time of running it. The DNS settings are inherited directly from the daemon and can be overridden piecemeal if required. Docker docs has a really comprehensive [page](https://docs.docker.com/config/containers/container-networking/) on how to achieve some of this.
 
-```md
-- Item 1
-- Item 2
-  - Item 2a
-  - Item 2b
-```
+# How does Kubernetes do it
 
-- Item 1
-- Item 2
-  - Item 2a
-  - Item 2b
+Pods are the basic building block of a kubernetes cluster. It is a collection of containers that logically belong together. This abstraction can be compared to a set of processes running on a single VM. There is one very interesting aspects to a pod that warrants further digging. All the containers in a pod can access each other using localhost. As you might have guessed this is achieved similarly to the last example we saw in the last section but there is a little more subtlety involved.
 
-### Images
+All the pods on a single node are connected to a single bridge network that kubernetes names `cbr0` or Custom Bridge. Whenever a new pod is created, a container called `pause` is started. The only job of this container is to hold on to an IP address on the `bridge` network. All other containers coming up in this pod are configured to share the networking namespace of this particular container. And thus all containers in the same pod can access each other using `localhost`.
 
-```md
-![image-in-post](./image-in-post.jpg)
-```
 
-![image-in-post](./image-in-post.jpg)
-
-### Links
-
-```md
-[github.com/Chronoblog/gatsby-theme-chronoblog](https://github.com/Chronoblog/gatsby-theme-chronoblog)
-```
-
-[github.com/Chronoblog/gatsby-theme-chronoblog](https://github.com/Chronoblog/gatsby-theme-chronoblog)
-
-### Blockquotes
-
-```md
-As Kanye West said:
-
-> We're living the future so
-> the present is our past.
-```
-
-As Kanye West said:
-
-> We're living the future so
-> the present is our past.
-
-### Inline code
-
-**`js:`**
-
-```js
-const someFun = (text) => {
-  console.log('some ' + text);
-};
-someFun('text');
-```
-
-**`css:`**
-
-```css
-.thing {
-  font-size: 16px;
-  width: 100%;
-}
-@media screen and (min-width: 40em) {
-  font-size: 20px;
-  width: 50%;
-}
-@media screen and (min-width: 52em) {
-  font-size: 24px;
-}
-```
-
-**`jsx:`**
-
-```jsx
-<Thing fontSize={[16, 20, 24]} width={[1, 1 / 2]} />
-```
-
-What distinguishes Markdown from many other lightweight markup syntaxes, which are often easier to write, is its readability.
