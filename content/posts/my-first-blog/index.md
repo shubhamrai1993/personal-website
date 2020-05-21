@@ -80,6 +80,23 @@ You can see that a new bridge network named custom network has been defined for 
 
 ## 2. Host networks
 
+Docker allows you to leverage the network of the host machine i.e. the machine where docker daemon is running to launch containers directly. This is similar to launching an application on a host bound to a particular port. The container is assigned no IP address of it's own. You can address the application running inside the container directly using `localhost`. It is very useful when you want to just run an application with behaviour similar to a local installation. One huge limitation to this approach is that you can only use it from Linux.
+
+To use this option, just specify it while launching your container - 
+
+```bash
+$ docker run --network host -d nginx:latest
+27b01648936d03ccb214dd59f0175a6fada94fb80da32fa7b485ee91c37f2ffc
+$ curl localhost:80
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+-------- nginx welcome page
+```
+
+
+
 
 This is an example blog post. All your blog posts should be here: `content/posts`.
 
